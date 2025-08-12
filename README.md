@@ -55,8 +55,11 @@ Clique em "__Salvar Endereço__"
 # 2️⃣ Gerenciar Endereços Salvos
 
 ✏️ __Editar__: Clique no ícone de edição para modificar um endereço
+
 🗑️ __Excluir__: Clique no ícone de lixeira para remover um endereço
+
 💾 __Salvar Alterações__: Após editar, clique no ícone de salvar
+
 ❌ __Cancelar__: Use o ícone X para cancelar a edição
 
 # 3️⃣ Recursos Especiais
