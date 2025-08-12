@@ -1,67 +1,74 @@
-🛠️ Instalação
-📋 Pré-requisitos
+# 🛠️ Instalação
+
+## 📋 Pré-requisitos:
+
 Certifique-se de ter instalado em sua máquina:
 
-Node.js (versão 16.0 ou superior)
-npm ou yarn ou pnpm
+__Node.js (versão 16.0 ou superior)__
+__npm ou yarn ou pnpm__
 
-🔧 Passo a Passo
+# 🔧 Passo a Passo
 
-Clone o repositório:
+## Clone o repositório:
 
-git clone https://github.com/LuckeSilver/testeVivaLucasSilva
-cd testeVivaLucasSilva
+__git clone__ https://github.com/LuckeSilver/testeVivaLucasSilva
+__cd__ testeVivaLucasSilva
 
-Instale as dependências
+## Instale as dependências
 
-# Com npm
-npm install
+## Com npm
+__npm install__
 
-# Com yarn
-yarn install
+## Com yarn
+__yarn install__
 
-# Com pnpm
-pnpm install
+## Com pnpm
+__pnpm install__
 
-Execute a aplicação:
-# Com npm
-npm run dev
+## Execute a aplicação:
+## Com npm
+__npm run dev__
 
-# Com yarn
-yarn dev
+## Com yarn
+__yarn dev__
 
-# Com pnpm
-pnpm dev
+## Com pnpm
+__pnpm dev__
 
-Acesse no navegador:
-http://localhost:5173
-
-
-
-📱 Como Usar
-1️⃣ Cadastrar Novo Endereço
-
-Preencha o Nome Completo
-Digite um CPF válido (será validado automaticamente)
-Insira o CEP (os campos de endereço serão preenchidos automaticamente)
-Confirme ou ajuste as informações de endereço
-Clique em "Salvar Endereço"
-
-2️⃣ Gerenciar Endereços Salvos
-
-✏️ Editar: Clique no ícone de edição para modificar um endereço
-🗑️ Excluir: Clique no ícone de lixeira para remover um endereço
-💾 Salvar Alterações: Após editar, clique no ícone de salvar
-❌ Cancelar: Use o ícone X para cancelar a edição
-
-3️⃣ Recursos Especiais
-
-🔍 Busca Automática: Ao digitar um CEP válido, aguarde o preenchimento automático
-📱 Responsivo: Use em qualquer dispositivo - mobile, tablet ou desktop
-💬 Feedback Visual: Observe as mensagens de sucesso e erro
+## Acesse no navegador:
+__http://localhost:5173__
 
 
-👨‍💻 Autor
+
+## 📱 Como Usar:
+1️⃣ __Cadastrar Novo Endereço__
+
+Preencha o __Nome Completo__
+
+Digite um __CPF válido__ (será validado automaticamente)
+Insira o __CEP__ (os campos de endereço serão preenchidos automaticamente)
+
+Confirme ou ajuste as __informações de endereço__
+
+Clique em "__Salvar Endereço__"
+
+# 2️⃣ Gerenciar Endereços Salvos
+
+✏️ __Editar__: Clique no ícone de edição para modificar um endereço
+🗑️ __Excluir__: Clique no ícone de lixeira para remover um endereço
+💾 __Salvar Alterações__: Após editar, clique no ícone de salvar
+❌ __Cancelar__: Use o ícone X para cancelar a edição
+
+# 3️⃣ Recursos Especiais
+
+🔍 __Busca Automática__: Ao digitar um CEP válido, aguarde o preenchimento automático
+
+📱 __Responsivo__: Use em qualquer dispositivo - mobile, tablet ou desktop
+
+💬 __Feedback Visual__: Observe as mensagens de sucesso e erro
+
+
+## 👨‍💻 __Autor__
 <div align="center">
 Desenvolvido com 💜 por Lucas Silva.
 </div>
