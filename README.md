@@ -1,3 +1,6 @@
+# ✨ Acesse o link abaixo e veja funcionando:
+<a href="https://testevivalucas.netlify.app/" target="_blank">Gerenciador de endereços</a>
+
 # 🛠️ Instalação
 
 ## 📋 Pré-requisitos:
