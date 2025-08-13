@@ -25,7 +25,51 @@ const App = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  // Função para buscar CEP na API ViaCEP
+  // Carrega os endereços ao iniciar
+  useEffect(() => {
+    const loadAddresses = async () => {
+      try {
+        const response = await fetch('https://address-manager-production.up.railway.app/api/addresses');
+        if (!response.ok) throw new Error('Erro ao carregar endereços');
+        
+        const data = await response.json();
+        console.log('Addresses loaded:', data);
+        
+        // Formata os dados para garantir estrutura consistente
+        const formattedAddresses = data.map(addr => ({
+          id: addr.id,
+          nome: addr.nome,
+          cpf: addr.cpf,
+          cep: addr.cep,
+          logradouro: addr.logradouro,
+          bairro: addr.bairro,
+          cidade: addr.cidade,
+          estado: addr.estado,
+          endereco: addr.endereco || `${addr.logradouro}, ${addr.bairro}, ${addr.cidade}, ${addr.estado}`
+        }));
+        
+        setAddresses(formattedAddresses);
+      } catch (error) {
+        console.error('Error loading addresses:', error);
+        setError('Erro ao carregar endereços');
+      }
+    };
+
+    loadAddresses();
+  }, []);
+
+  const parseEndereco = (endereco) => {
+  if (!endereco) return { logradouro: '', bairro: '', cidadeEstado: '' };
+  
+  const parts = endereco.split(', ');
+  return {
+    logradouro: parts[0] || '',
+    bairro: parts[1] || '',
+    cidadeEstado: parts.slice(2).join(', ') || ''
+  };
+};
+
+  // Busca informações do CEP na API viaCEP
   const fetchCEP = async (cep) => {
     if (cep.length !== 8) return;
     
@@ -55,15 +99,12 @@ const App = () => {
     }
   };
 
-  // Função para validar CPF
+  // Validação de CPF
   const validateCPF = (cpf) => {
     const cleanCPF = cpf.replace(/\D/g, '');
     if (cleanCPF.length !== 11) return false;
-    
-    // Verifica se todos os dígitos são iguais
     if (/^(\d)\1{10}$/.test(cleanCPF)) return false;
     
-    // Validação do primeiro dígito verificador
     let sum = 0;
     for (let i = 0; i < 9; i++) {
       sum += parseInt(cleanCPF.charAt(i)) * (10 - i);
@@ -72,7 +113,6 @@ const App = () => {
     if (remainder === 10 || remainder === 11) remainder = 0;
     if (remainder !== parseInt(cleanCPF.charAt(9))) return false;
     
-    // Validação do segundo dígito verificador
     sum = 0;
     for (let i = 0; i < 10; i++) {
       sum += parseInt(cleanCPF.charAt(i)) * (11 - i);
@@ -84,19 +124,18 @@ const App = () => {
     return true;
   };
 
-  // Função para formatar CPF
+  // Formatação do CPF
   const formatCPF = (cpf) => {
     const cleanCPF = cpf.replace(/\D/g, '');
     return cleanCPF.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
   };
 
-  // Função para formatar CEP
   const formatCEP = (cep) => {
     const cleanCEP = cep.replace(/\D/g, '');
     return cleanCEP.replace(/(\d{5})(\d{3})/, '$1-$2');
   };
 
-  // Função para validar formulário
+  // Validação do formulário
   const validateForm = () => {
     if (!formData.nome.trim()) {
       setError('Nome é obrigatório');
@@ -136,90 +175,169 @@ const App = () => {
     return true;
   };
 
-  // Função para salvar endereço
-  const handleSave = () => {
+  // Salvar novo endereço
+  const handleSave = async () => {
     setError('');
     setSuccess('');
-    
+
     if (!validateForm()) return;
-    
+
     const newAddress = {
-      id: Date.now(),
-      ...formData,
+      cep: formatCEP(formData.cep),
       cpf: formatCPF(formData.cpf),
-      cep: formatCEP(formData.cep)
+      nome: formData.nome,
+      logradouro: formData.logradouro,
+      bairro: formData.bairro,
+      cidade: formData.cidade,
+      estado: formData.estado,
+      endereco: `${formData.logradouro}, ${formData.bairro}, ${formData.cidade}, ${formData.estado}`
     };
-    
-    setAddresses(prev => [...prev, newAddress]);
-    setFormData({
-      nome: '',
-      cpf: '',
-      cep: '',
-      logradouro: '',
-      bairro: '',
-      cidade: '',
-      estado: ''
-    });
-    setSuccess('Endereço salvo com sucesso!');
+
+    try {
+      const response = await fetch('https://address-manager-production.up.railway.app/api/addresses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newAddress),
+      });
+
+      if (response.ok) {
+        const savedAddress = await response.json();
+        setAddresses(prev => [...prev, savedAddress]);
+        setFormData({
+          nome: '',
+          cpf: '',
+          cep: '',
+          logradouro: '',
+          bairro: '',
+          cidade: '',
+          estado: ''
+        });
+        setSuccess('Endereço salvo com sucesso!');
+      } else {
+        const errorText = await response.text();
+        throw new Error(errorText || 'Falha ao salvar endereço');
+      }
+    } catch (error) {
+      console.error('Error saving address:', error);
+      setError(`Erro ao salvar: ${error.message}`);
+    }
   };
 
-  // Função para iniciar edição
-  const startEdit = (address) => {
+  // Iniciar edição
+const startEdit = (address) => {
+  console.log('Address object received:', address);
+  
+  if (address && address.id) {
+    console.log('Starting edit for ID:', address.id);
+    
+    // Extrai os componentes do endereço
+    const enderecoParts = address.endereco ? address.endereco.split(', ') : [];
+    
     setEditingId(address.id);
     setEditData({
-      ...address,
-      cpf: address.cpf.replace(/\D/g, ''),
-      cep: address.cep.replace(/\D/g, '')
+      nome: address.nome || '',
+      cpf: address.cpf?.replace(/\D/g, '') || '',
+      cep: address.cep?.replace(/\D/g, '') || '',
+      logradouro: enderecoParts[0] || address.logradouro || '',
+      bairro: enderecoParts[1] || address.bairro || '',
+      cidade: enderecoParts[2] || address.cidade || '',
+      estado: enderecoParts[3] || address.estado || ''
     });
-  };
+  } else {
+    console.error('Invalid address object or missing ID:', address);
+    setError('ID do endereço não encontrado.');
+  }
+};
 
-  // Função para salvar edição
-  const saveEdit = () => {
+  // Salvar edição
+  const saveEdit = async () => {
+    console.log('Current editingId:', editingId);
+    console.log('Current editData:', editData);
+    
     setError('');
-    
-    if (!editData.nome.trim()) {
-      setError('Nome é obrigatório');
+    setSuccess('');
+
+    if (!editingId) {
+      console.error('No editingId found');
+      setError('ID do endereço não encontrado para edição.');
       return;
     }
-    
-    if (!validateCPF(editData.cpf)) {
-      setError('CPF inválido');
-      return;
+
+    try {
+      const payload = {
+        nome: editData.nome,
+        cpf: formatCPF(editData.cpf),
+        cep: formatCEP(editData.cep),
+        logradouro: editData.logradouro,
+        bairro: editData.bairro,
+        cidade: editData.cidade,
+        estado: editData.estado,
+        endereco: `${editData.logradouro}, ${editData.bairro}, ${editData.cidade}, ${editData.estado}`
+      };
+
+      console.log('Sending payload:', payload);
+
+      const response = await fetch(`https://address-manager-production.up.railway.app/api/addresses/${editingId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      console.log('Response status:', response.status);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Server error:', errorText);
+        throw new Error(errorText || 'Erro ao atualizar endereço');
+      }
+
+      const updatedAddress = await response.json();
+      console.log('Updated address:', updatedAddress);
+
+      setAddresses(prev => prev.map(addr => 
+        addr.id === editingId ? updatedAddress : addr
+      ));
+
+      setEditingId(null);
+      setEditData({});
+      setSuccess('Endereço atualizado com sucesso!');
+
+    } catch (error) {
+      console.error('Error in saveEdit:', error);
+      setError(`Erro ao atualizar: ${error.message}`);
     }
-    
-    if (editData.cep.replace(/\D/g, '').length !== 8) {
-      setError('CEP deve ter 8 dígitos');
-      return;
-    }
-    
-    setAddresses(prev => prev.map(addr => 
-      addr.id === editingId 
-        ? { 
-            ...editData, 
-            cpf: formatCPF(editData.cpf),
-            cep: formatCEP(editData.cep)
-          }
-        : addr
-    ));
-    
-    setEditingId(null);
-    setEditData({});
-    setSuccess('Endereço atualizado com sucesso!');
   };
 
-  // Função para cancelar edição
+  // Cancelar edição
   const cancelEdit = () => {
     setEditingId(null);
     setEditData({});
   };
 
-  // Função para deletar endereço
-  const deleteAddress = (id) => {
-    setAddresses(prev => prev.filter(addr => addr.id !== id));
-    setSuccess('Endereço removido com sucesso!');
+  // Deletar endereço
+  const deleteAddress = async (id) => {
+    try {
+      const response = await fetch(`https://address-manager-production.up.railway.app/api/addresses/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (response.ok) {
+        setAddresses(prev => prev.filter(addr => addr.id !== id));
+        setSuccess('Endereço removido com sucesso!');
+      } else {
+        throw new Error('Falha ao remover endereço');
+      }
+    } catch (error) {
+      console.error('Error deleting address:', error);
+      setError(`Erro ao remover: ${error.message}`);
+    }
   };
 
-  // Handle input changes no formulário principal
+  // Manipuladores de input
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
@@ -231,7 +349,6 @@ const App = () => {
     }
   };
 
-  // Handle input changes no formulário de edição
   const handleEditInputChange = (field, value) => {
     setEditData(prev => ({ ...prev, [field]: value }));
     
@@ -243,7 +360,7 @@ const App = () => {
     }
   };
 
-  // Função para buscar CEP durante edição
+  // Busca CEP durante edição
   const fetchEditCEP = async (cep) => {
     setLoading(true);
     setError('');
@@ -271,7 +388,7 @@ const App = () => {
     }
   };
 
-  // Clear messages after 3 seconds
+  // Limpa mensagens após 3 segundos
   useEffect(() => {
     if (error || success) {
       const timer = setTimeout(() => {
@@ -593,7 +710,7 @@ const App = () => {
                               <span className="w-2 h-2 bg-emerald-400 rounded-full"></span>
                               Logradouro
                             </p>
-                            <p className="text-slate-600 ml-4">{address.logradouro}</p>
+                            <p className="text-slate-600 ml-4">{parseEndereco(address.endereco).logradouro}</p>
                           </div>
                           
                           <div className="space-y-1">
@@ -601,7 +718,7 @@ const App = () => {
                               <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
                               Bairro
                             </p>
-                            <p className="text-slate-600 ml-4">{address.bairro}</p>
+                            <p className="text-slate-600 ml-4">{parseEndereco(address.endereco).bairro}</p>
                           </div>
                           
                           <div className="space-y-1">
@@ -609,7 +726,7 @@ const App = () => {
                               <span className="w-2 h-2 bg-pink-400 rounded-full"></span>
                               Cidade/Estado
                             </p>
-                            <p className="text-slate-600 ml-4">{address.cidade} - {address.estado}</p>
+                            <p className="text-slate-600 ml-4">{parseEndereco(address.endereco).cidadeEstado}</p>
                           </div>
                         </div>
                       </div>
